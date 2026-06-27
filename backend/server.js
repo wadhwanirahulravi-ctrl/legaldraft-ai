@@ -13,19 +13,27 @@ app.get('/', (req, res) => {
 })
 
 const upload = require('./config/multer')
+const { extractText } = require('./services/pdfService')
 
 app.post('/test-upload',
   upload.single('contract'),
-  (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file received' })
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file received' })
+      }
+
+      const text = await extractText(req.file.path)
+
+      res.json({
+        message: 'File uploaded and text extracted',
+        fileName: req.file.filename,
+        textLength: text.length,
+        textPreview: text.substring(0, 300)
+      })
+    } catch (err) {
+      res.status(500).json({ error: err.message })
     }
-    res.json({
-      message: 'File uploaded successfully',
-      fileName: req.file.filename,
-      originalName: req.file.originalname,
-      size: req.file.size
-    })
   }
 )
 
