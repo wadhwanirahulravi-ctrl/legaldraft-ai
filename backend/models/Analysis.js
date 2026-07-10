@@ -29,10 +29,7 @@ const AnalysisSchema = new mongoose.Schema({
   redFlags: [RedFlagSchema],
   counterDraft: String,
   summary: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  createdAt: { type: Date, default: Date.now }
 })
 
 module.exports = mongoose.model('Analysis', AnalysisSchema)

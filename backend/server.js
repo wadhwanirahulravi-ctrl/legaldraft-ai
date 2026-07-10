@@ -4,6 +4,11 @@ const dotenv  = require('dotenv')
 
 dotenv.config()
 
+const mongoose = require('mongoose')
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected ✅'))
+  .catch(err => console.error('MongoDB error:', err.message))
+
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -15,27 +20,7 @@ app.get('/', (req, res) => {
 const upload = require('./config/multer')
 const { extractText } = require('./services/pdfService')
 
-app.post('/test-upload',
-  upload.single('contract'),
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file received' })
-      }
-
-      const text = await extractText(req.file.path)
-
-      res.json({
-        message: 'File uploaded and text extracted',
-        fileName: req.file.filename,
-        textLength: text.length,
-        textPreview: text.substring(0, 300)
-      })
-    } catch (err) {
-      res.status(500).json({ error: err.message })
-    }
-  }
-)
+app.use('/api', require('./routes/contractRoutes'))
 
 app.use((err, req, res, next) => {
   if (err.message === 'Only PDF files are allowed.') {
