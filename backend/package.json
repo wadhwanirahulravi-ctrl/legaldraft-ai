@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "mongoose": "^9.7.2",
     "multer": "^2.2.0",
+    "openai": "^6.46.0",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
