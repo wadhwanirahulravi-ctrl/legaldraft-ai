@@ -6,6 +6,7 @@ import Analysing from './pages/Analysing'
 import AnalysisResults from './pages/AnalysisResults'
 import RedFlags from './pages/RedFlags'
 import CounterDraft from './pages/CounterDraft'
+import NotFound from './pages/NotFound'
 
 function App() {
   const location = useLocation()
@@ -19,6 +20,7 @@ function App() {
         <Route path="/results/:id" element={<AnalysisResults />} />
         <Route path="/redflags/:id" element={<RedFlags />} />
         <Route path="/counter/:id" element={<CounterDraft />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
   )

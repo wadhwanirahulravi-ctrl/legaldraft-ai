@@ -1,18 +1,35 @@
-import { useState } from 'react'
-import { Link, useParams, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, ShieldCheck, FileText, Scale, Download, Moon, CheckCircle2 } from 'lucide-react'
+import { AlertTriangle, ShieldCheck, FileText, Scale, Download, Moon, CheckCircle2, Copy, Check } from 'lucide-react'
+import API from '../api'
 
 function CounterDraft() {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
+  const [analysis, setAnalysis] = useState(null)
   const [showToast, setShowToast] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const toggleTheme = () => document.documentElement.classList.toggle('dark')
+
+  useEffect(() => {
+    API.get('/api/analysis/' + id)
+      .then(res => setAnalysis(res.data))
+  }, [id])
 
   const handleDownload = () => {
     setShowToast(true)
     setTimeout(() => setShowToast(false), 3000)
+  }
+
+  const handleCopy = () => {
+    if (analysis?.counterDraft) {
+      navigator.clipboard.writeText(analysis.counterDraft)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   const tabs = [
@@ -20,6 +37,12 @@ function CounterDraft() {
     { path: `/redflags/${id}`, label: 'Red Flags', icon: AlertTriangle, color: 'text-slate-500 dark:text-slate-400' },
     { path: `/counter/${id}`, label: 'Counter Draft', icon: ShieldCheck, color: 'text-emerald-600 dark:text-emerald-400' }
   ]
+
+  if (!analysis) return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+    </motion.div>
+  )
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen flex flex-col relative overflow-hidden">
@@ -59,17 +82,20 @@ function CounterDraft() {
             </motion.button>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-lg border border-white/60 dark:border-slate-700/60 rounded-2xl p-6 shadow-xl shadow-slate-200/30 dark:shadow-none">
-            <div className="mb-6">
-              <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-900/50 px-3 py-1 rounded-md">Original Risk</span>
-              <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg line-through decoration-red-400/50 dark:decoration-red-500/50 decoration-2">The landlord may terminate with 7 days notice.</p>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-lg border border-white/60 dark:border-slate-700/60 rounded-2xl p-6 shadow-xl shadow-slate-200/30 dark:shadow-none relative group">
+            <div className="text-slate-800 dark:text-slate-200 font-semibold text-lg leading-relaxed whitespace-pre-wrap">
+              {analysis.counterDraft || "No counter draft available for this contract."}
             </div>
-            <div className="bg-emerald-50/80 dark:bg-emerald-900/20 rounded-xl p-5 border border-emerald-100 dark:border-emerald-800/50 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500" />
-              <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Suggested Revision</span>
-              <p className="text-emerald-950 dark:text-emerald-100 mt-2 font-bold text-lg leading-relaxed">Either party may terminate this agreement with a minimum of 30 days written notice.</p>
-            </div>
+            <button onClick={handleCopy} className="absolute top-4 right-4 p-2 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border border-slate-200 dark:border-slate-600 rounded-md text-slate-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              {copied ? <Check size={18} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={18} />}
+            </button>
           </motion.div>
+          
+          <div className="mt-8 flex gap-3">
+            <button onClick={() => navigate(`/results/${id}`)} className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              Back to Results
+            </button>
+          </div>
         </motion.div>
       </main>
 
