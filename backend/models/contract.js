@@ -14,4 +14,3 @@ const ContractSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model('Contract', ContractSchema)
-

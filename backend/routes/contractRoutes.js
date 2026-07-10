@@ -70,7 +70,9 @@ router.post('/analyse/:contractId', async (req, res) => {
       contractId: contract._id,
       clauses: result.clauses || [],
       redFlags: result.redFlags || [],
-      counterDraft: result.counterDraft || '',
+      // The AI sometimes returns an Object for counterDraft, but the schema expects a String.
+      // Stringifying it fixes the "Cast to string failed" error.
+      counterDraft: typeof result.counterDraft === 'object' ? JSON.stringify(result.counterDraft) : (result.counterDraft || ''),
       summary: result.summary || ''
     })
 
