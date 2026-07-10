@@ -20,9 +20,7 @@ router.post('/upload',
 
       if (!rawText || rawText.trim().length < 50) {
         return res.status(400).json({
-          error: 'Could not extract text from this PDF. ' +
-            'Please upload a text-based PDF, not a ' +
-            'scanned image.'
+          error: 'This PDF appears to be a scanned image. Please upload a PDF with actual text — for example, one created from a Word document or typed directly in a PDF editor.'
         })
       }
 
