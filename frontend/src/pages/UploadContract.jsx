@@ -2,24 +2,36 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UploadCloud, File, AlertCircle, ArrowRight, Scale, X, Moon } from 'lucide-react'
+import API from '../api'
 
 function UploadContract() {
   const [file, setFile] = useState(null)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const navigate = useNavigate()
 
   const toggleTheme = () => document.documentElement.classList.toggle('dark')
 
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0]
-    validateAndSetFile(selected)
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
   }
 
   const handleDrop = (e) => {
     e.preventDefault()
     setIsDragging(false)
     const selected = e.dataTransfer.files[0]
+    validateAndSetFile(selected)
+  }
+
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0]
     validateAndSetFile(selected)
   }
 
@@ -33,18 +45,28 @@ function UploadContract() {
     }
   }
 
-  const handleSubmit = () => {
-    if (!file) {
-      setError('Please select a PDF document to proceed.')
-      return
-    }
-    navigate('/analysing/doc-123')
-  }
-
   const removeFile = (e) => {
     e.preventDefault()
     setFile(null)
     setError('')
+  }
+
+  const handleSubmit = async () => {
+    if (!file) {
+      setError('Please select a PDF document to proceed.')
+      return
+    }
+    setLoading(true)
+    setError('')
+    const formData = new FormData()
+    formData.append('contract', file)
+    try {
+      const res = await API.post('/api/upload', formData)
+      navigate('/analysing/' + res.data.contractId)
+    } catch (err) {
+      setError(err.response?.data?.error || 'Upload failed. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -65,8 +87,8 @@ function UploadContract() {
           <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Secure, private, and encrypted analysis.</p>
 
           <label
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-            onDragLeave={() => setIsDragging(false)}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             tabIndex={0}
             className={`cursor-pointer block border-3 border-dashed rounded-2xl p-12 text-center mb-6 transition-all duration-300 relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
@@ -80,7 +102,7 @@ function UploadContract() {
               </p>
               <p className="text-slate-400 dark:text-slate-500 text-sm font-medium">Maximum file size: 10MB (PDF)</p>
             </motion.div>
-            <input type="file" accept=".pdf" onChange={handleFileChange} className="hidden" />
+            <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" />
           </label>
 
           <AnimatePresence mode="wait">
@@ -111,14 +133,14 @@ function UploadContract() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleSubmit}
-            disabled={!file}
+            disabled={!file || loading}
             className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
-              file 
+              file && !loading
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 dark:hover:bg-indigo-600 cursor-pointer' 
                 : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
             }`}
           >
-            Begin Analysis <ArrowRight size={20} />
+            {loading ? 'Uploading...' : 'Begin Analysis'} <ArrowRight size={20} />
           </motion.button>
         </motion.div>
       </div>

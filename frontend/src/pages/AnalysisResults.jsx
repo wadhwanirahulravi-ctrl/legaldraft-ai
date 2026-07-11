@@ -1,94 +1,73 @@
-import { Link, useParams, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { AlertTriangle, ShieldCheck, FileText, Scale, Moon } from 'lucide-react'
+import API from '../api'
 
 function AnalysisResults() {
   const { id } = useParams()
-  const location = useLocation()
+  const navigate = useNavigate()
+  const [analysis, setAnalysis] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const toggleTheme = () => document.documentElement.classList.toggle('dark')
+  useEffect(() => {
+    API.get('/api/analysis/' + id)
+      .then(res => {
+        setAnalysis(res.data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setError('Could not load analysis. Please try again.')
+        setLoading(false)
+      })
+  }, [id])
 
-  const tabs = [
-    { path: `/results/${id}`, label: 'All Clauses', icon: FileText, color: 'text-indigo-600 dark:text-indigo-400' },
-    { path: `/redflags/${id}`, label: 'Red Flags', icon: AlertTriangle, color: 'text-slate-500 dark:text-slate-400' },
-    { path: `/counter/${id}`, label: 'Counter Draft', icon: ShieldCheck, color: 'text-slate-500 dark:text-slate-400' }
-  ]
-
-  const clauses = [
-    { 
-      text: <>The landlord may <span className="relative group underline decoration-dotted cursor-help decoration-slate-400 dark:decoration-slate-500">terminate<div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-800 dark:bg-white dark:text-slate-900 text-white text-xs rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-xl font-medium leading-relaxed">Bring the contract to an end or cancel the agreement.</div></span> with 7 days notice.</>, 
-      category: "Termination", 
-      riskLevel: "high", 
-      explanation: "You can be asked to leave with only 7 days warning. That is very short notice." 
-    },
-    { 
-      text: <>Rent shall be paid on the 1st of each month.</>, 
-      category: "Payment", 
-      riskLevel: "low", 
-      explanation: "Standard payment term. Nothing unusual." 
-    },
-  ]
-
-  const riskStyles = {
-    low: "bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50",
-    medium: "bg-amber-100/80 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50",
-    high: "bg-red-100/80 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50"
+  const riskColour = {
+    low: 'bg-green-100 text-green-800',
+    medium: 'bg-yellow-100 text-yellow-800',
+    high: 'bg-red-100 text-red-800 animate-pulse'
   }
 
+  if (loading) return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="min-h-screen flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </motion.div>
+  )
+
+  if (error) return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-2xl mx-auto p-6">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 w-full">{error}</div>
+    </motion.div>
+  )
+
+  if (!analysis) return null
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen flex flex-col">
-      <nav className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-white/40 dark:border-slate-800/40 px-8 py-4 sticky top-0 z-50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Scale className="text-indigo-600 dark:text-indigo-400" size={24} />
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">LegalDraft AI</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full border border-white dark:border-slate-700">
-            Doc ID: {id}
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-2">Contract Analysis</h1>
+      <p className="text-gray-500 text-sm mb-6 leading-relaxed">{analysis.summary}</p>
+      <div className="flex gap-3 mb-8 w-full flex-wrap">
+        <button onClick={() => navigate('/redflags/' + id)} className="bg-red-50 text-red-700 border border-red-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+          ⚠️ Red Flags ({analysis.redFlags?.length || 0})
+        </button>
+        <button onClick={() => navigate('/counter/' + id)} className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+          View Counter Draft
+        </button>
+      </div>
+      <h2 className="text-lg font-medium text-gray-700 mb-3">All Clauses</h2>
+      {analysis.clauses?.map((clause, i) => (
+        <div key={i} className="border border-gray-200 rounded-xl p-4 mb-3 bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 w-full">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs text-gray-400 uppercase tracking-wide">{clause.category}</span>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${riskColour[clause.riskLevel] || 'bg-gray-100 text-gray-700'}`}>
+              {clause.riskLevel} risk
+            </span>
           </div>
-          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
-            <Moon size={20} />
-          </button>
+          <p className="text-sm text-gray-600 italic mb-2">"{clause.text}"</p>
+          <p className="text-sm text-gray-500">{clause.explanation}</p>
         </div>
-      </nav>
-
-      <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-10">
-        <div className="flex gap-2 mb-8 border-b border-slate-200/60 dark:border-slate-700/60 pb-1">
-          {tabs.map((tab) => {
-            const isActive = location.pathname === tab.path
-            const Icon = tab.icon
-            return (
-              <Link key={tab.path} to={tab.path} className={`relative px-6 py-3 rounded-t-xl font-bold flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset ${isActive ? tab.color : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}>
-                <Icon size={18} /> {tab.label}
-                {isActive && (
-                  <motion.div layoutId="activetab" className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-600 dark:bg-indigo-400 rounded-t-full" />
-                )}
-              </Link>
-            )
-          })}
-        </div>
-
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-          <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white mb-6">Complete Analysis</h2>
-          
-          <div className="space-y-4">
-            {clauses.map((clause, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + (i * 0.1) }} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-lg border border-white/60 dark:border-slate-700/60 rounded-2xl p-6 shadow-xl shadow-slate-200/30 dark:shadow-none hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{clause.category}</span>
-                  <span className={`text-xs px-4 py-1.5 rounded-full font-bold border ${riskStyles[clause.riskLevel]}`}>
-                    {clause.riskLevel.toUpperCase()} RISK
-                  </span>
-                </div>
-                <p className="text-slate-800 dark:text-slate-200 font-semibold text-lg leading-relaxed mb-3">"{clause.text}"</p>
-                <div className="bg-slate-50/50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{clause.explanation}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </main>
+      ))}
+      <p className="text-xs text-gray-400 mt-6">For informational purposes only. Always consult a qualified legal professional.</p>
     </motion.div>
   )
 }
