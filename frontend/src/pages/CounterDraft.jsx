@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Scale, AlertTriangle, ShieldCheck, FileText, Copy, Check, Download, Moon } from 'lucide-react'
+import { Scale, AlertTriangle, ShieldCheck, FileText, Copy, Check, Download, Home, Moon } from 'lucide-react'
 import StepBar from '../components/StepBar'
 import API from '../api'
 
@@ -26,6 +26,17 @@ function CounterDraft() {
     }
   }
 
+  const handleDownload = () => {
+    if (!analysis?.counterDraft) return
+    const element = document.createElement("a")
+    const file = new Blob([analysis.counterDraft], { type: 'text/plain' })
+    element.href = URL.createObjectURL(file)
+    element.download = "LegalDraft-Counter-Draft.txt"
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
+  }
+
   const tabs = [
     { path: `/results/${id}`, label: 'All Clauses', icon: FileText },
     { path: `/redflags/${id}`, label: 'Red Flags', icon: AlertTriangle },
@@ -41,13 +52,18 @@ function CounterDraft() {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col transition-colors">
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center">
+        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
           <Scale className="text-blue-700 dark:text-blue-500 mr-2" size={24} />
           <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">LegalDraft</h1>
         </div>
-        <button onClick={toggleTheme} className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
-          <Moon size={20} />
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <Home size={14} /> Back to Home
+          </button>
+          <button onClick={toggleTheme} className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
+            <Moon size={20} />
+          </button>
+        </div>
       </nav>
 
       <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-10">
@@ -81,12 +97,17 @@ function CounterDraft() {
           </button>
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-3">
-          <button onClick={() => navigate(`/results/${id}`)} className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-md font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
-            Back to Results
-          </button>
-          <button className="bg-green-700 dark:bg-green-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-green-800 dark:hover:bg-green-700 transition-colors flex items-center gap-2">
-            <Download size={18} /> Download PDF
+        <div className="mt-8 flex flex-wrap gap-3 justify-between items-center">
+          <div className="flex gap-3">
+            <button onClick={() => navigate(`/results/${id}`)} className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-md font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+              Back to Results
+            </button>
+            <button onClick={handleDownload} className="bg-green-700 dark:bg-green-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-green-800 dark:hover:bg-green-700 transition-colors flex items-center gap-2">
+              <Download size={18} /> Download Draft
+            </button>
+          </div>
+          <button onClick={() => navigate('/')} className="bg-blue-700 dark:bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-800 dark:hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <Home size={18} /> Back to Home
           </button>
         </div>
       </main>
