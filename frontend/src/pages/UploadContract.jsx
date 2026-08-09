@@ -1,61 +1,37 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { UploadCloud, File, AlertCircle, ArrowRight, Scale, X, Moon } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useDropzone } from 'react-dropzone'
+import { Scale, AlertCircle, Moon } from 'lucide-react'
+import StepBar from '../components/StepBar'
 import API from '../api'
 
 function UploadContract() {
   const [file, setFile] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
   const navigate = useNavigate()
 
   const toggleTheme = () => document.documentElement.classList.toggle('dark')
 
-  const handleDragOver = (e) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = (e) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const selected = e.dataTransfer.files[0]
-    validateAndSetFile(selected)
-  }
-
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0]
-    validateAndSetFile(selected)
-  }
-
-  const validateAndSetFile = (selected) => {
-    if (selected && selected.type !== 'application/pdf') {
-      setError('Only PDF documents are supported at this time.')
-      setFile(null)
-    } else if (selected) {
-      setError('')
+  const onDrop = useCallback((acceptedFiles) => {
+    const selected = acceptedFiles[0]
+    if (selected && selected.type === 'application/pdf') {
       setFile(selected)
+      setError('')
+    } else {
+      setError('Only PDF files are accepted.')
     }
-  }
+  }, [])
 
-  const removeFile = (e) => {
-    e.preventDefault()
-    setFile(null)
-    setError('')
-  }
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'application/pdf': [] },
+    maxFiles: 1
+  })
 
   const handleSubmit = async () => {
-    if (!file) {
-      setError('Please select a PDF document to proceed.')
-      return
-    }
+    if (!file) return setError('Please select a PDF.')
     setLoading(true)
     setError('')
     const formData = new FormData()
@@ -70,79 +46,53 @@ function UploadContract() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen flex flex-col">
-      <nav className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-b border-white/40 dark:border-slate-800/40 px-8 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Scale className="text-indigo-600 dark:text-indigo-400" size={24} />
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">LegalDraft AI</h1>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col transition-colors">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center">
+          <Scale className="text-blue-700 dark:text-blue-500 mr-2" size={24} />
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">LegalDraft</h1>
         </div>
-        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 text-slate-800 dark:text-slate-200">
+        <button onClick={toggleTheme} className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
           <Moon size={20} />
         </button>
       </nav>
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/60 dark:border-slate-700/60 rounded-3xl shadow-2xl p-10 w-full max-w-xl">
-          <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white mb-3">Upload Contract</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Secure, private, and encrypted analysis.</p>
+      <div className="flex-1 flex flex-col items-center pt-10 p-6">
+        <StepBar current={0} />
+        
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm p-8 w-full max-w-lg mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 border-b border-gray-100 dark:border-gray-800 pb-4">Document Upload</h2>
+          
+          <div {...getRootProps()} className={`mt-6 border-2 border-dashed rounded-md p-10 text-center cursor-pointer transition-all duration-200 ${
+            isDragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-105' : 'border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-800'
+          }`}>
+            <input {...getInputProps()} />
+            <div className="text-4xl mb-3">📄</div>
+            <p className="text-gray-800 dark:text-gray-200 font-medium mb-1">
+              {isDragActive ? 'Drop your PDF here' : 'Drag and drop a PDF contract'}
+            </p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm">or click to browse files</p>
+          </div>
 
-          <label
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            tabIndex={0}
-            className={`cursor-pointer block border-3 border-dashed rounded-2xl p-12 text-center mb-6 transition-all duration-300 relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
-              isDragging ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 scale-[1.02]' : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-white/50 dark:hover:bg-slate-800/50'
-            }`}
-          >
-            <motion.div animate={{ y: isDragging ? -10 : 0 }}>
-              <UploadCloud className={`mx-auto mb-4 transition-colors ${isDragging ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}`} size={48} />
-              <p className="text-slate-700 dark:text-slate-200 font-bold text-lg mb-1">
-                {isDragging ? 'Drop document here' : 'Click or drag document here'}
-              </p>
-              <p className="text-slate-400 dark:text-slate-500 text-sm font-medium">Maximum file size: 10MB (PDF)</p>
-            </motion.div>
-            <input type="file" accept="application/pdf" onChange={handleFileChange} className="hidden" />
-          </label>
+          {file && (
+            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{file.name}</span>
+              <button onClick={(e) => { e.stopPropagation(); setFile(null); }} className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 text-sm font-bold px-2">✕</button>
+            </div>
+          )}
 
-          <AnimatePresence mode="wait">
-            {file && (
-              <motion.div initial={{ opacity: 0, height: 0, marginBottom: 0 }} animate={{ opacity: 1, height: 'auto', marginBottom: 24 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-xl p-4 flex items-center justify-between overflow-hidden">
-                <div className="flex items-center gap-4 overflow-hidden">
-                  <div className="bg-indigo-600 dark:bg-indigo-500 p-2 rounded-lg shrink-0"><File className="text-white" size={20} /></div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100 truncate max-w-[200px] sm:max-w-[250px]">{file.name}</p>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-300 font-medium">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
-                </div>
-                <button onClick={removeFile} className="p-2 text-indigo-400 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-100 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <X size={20} />
-                </button>
-              </motion.div>
-            )}
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 rounded-md flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
+              <AlertCircle size={16} /> {error}
+            </div>
+          )}
 
-            {error && (
-              <motion.div initial={{ opacity: 0, height: 0, marginBottom: 0 }} animate={{ opacity: 1, height: 'auto', marginBottom: 24 }} exit={{ opacity: 0, height: 0, marginBottom: 0 }} className="bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800/50 rounded-xl p-4 flex items-center gap-3 overflow-hidden text-red-700 dark:text-red-300 font-medium">
-                <AlertCircle size={20} className="shrink-0" />
-                <p className="text-sm">{error}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleSubmit}
-            disabled={!file || loading}
-            className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
-              file && !loading
-                ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 dark:hover:bg-indigo-600 cursor-pointer' 
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            {loading ? 'Uploading...' : 'Begin Analysis'} <ArrowRight size={20} />
-          </motion.button>
-        </motion.div>
+          <button onClick={handleSubmit} disabled={!file || loading} className={`mt-6 w-full py-3 rounded-md font-semibold transition-colors ${
+            file && !loading ? 'bg-blue-700 dark:bg-blue-600 text-white hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+          }`}>
+            {loading ? 'Processing...' : 'Upload & Analyze'}
+          </button>
+        </div>
       </div>
     </motion.div>
   )

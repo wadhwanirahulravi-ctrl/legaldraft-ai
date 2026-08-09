@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, ShieldCheck, FileText, Scale, Download, Moon, CheckCircle2, Copy, Check } from 'lucide-react'
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Scale, AlertTriangle, ShieldCheck, FileText, Copy, Check, Download, Moon } from 'lucide-react'
+import StepBar from '../components/StepBar'
 import API from '../api'
 
 function CounterDraft() {
@@ -9,20 +10,13 @@ function CounterDraft() {
   const location = useLocation()
   const navigate = useNavigate()
   const [analysis, setAnalysis] = useState(null)
-  const [showToast, setShowToast] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const toggleTheme = () => document.documentElement.classList.toggle('dark')
 
   useEffect(() => {
-    API.get('/api/analysis/' + id)
-      .then(res => setAnalysis(res.data))
+    API.get('/api/analysis/' + id).then(res => setAnalysis(res.data))
   }, [id])
-
-  const handleDownload = () => {
-    setShowToast(true)
-    setTimeout(() => setShowToast(false), 3000)
-  }
 
   const handleCopy = () => {
     if (analysis?.counterDraft) {
@@ -33,80 +27,69 @@ function CounterDraft() {
   }
 
   const tabs = [
-    { path: `/results/${id}`, label: 'All Clauses', icon: FileText, color: 'text-slate-500 dark:text-slate-400' },
-    { path: `/redflags/${id}`, label: 'Red Flags', icon: AlertTriangle, color: 'text-slate-500 dark:text-slate-400' },
-    { path: `/counter/${id}`, label: 'Counter Draft', icon: ShieldCheck, color: 'text-emerald-600 dark:text-emerald-400' }
+    { path: `/results/${id}`, label: 'All Clauses', icon: FileText },
+    { path: `/redflags/${id}`, label: 'Red Flags', icon: AlertTriangle },
+    { path: `/counter/${id}`, label: 'Counter Draft', icon: ShieldCheck }
   ]
 
   if (!analysis) return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-    </motion.div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="w-10 h-10 border-4 border-gray-200 dark:border-gray-800 border-t-blue-700 dark:border-t-blue-500 rounded-full animate-spin"></div>
+    </div>
   )
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen flex flex-col relative overflow-hidden">
-      <nav className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-white/40 dark:border-slate-800/40 px-8 py-4 sticky top-0 z-50 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Scale className="text-indigo-600 dark:text-indigo-400" size={24} />
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">LegalDraft AI</h1>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col transition-colors">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-8 py-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center">
+          <Scale className="text-blue-700 dark:text-blue-500 mr-2" size={24} />
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">LegalDraft</h1>
         </div>
-        <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
+        <button onClick={toggleTheme} className="p-2 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
           <Moon size={20} />
         </button>
       </nav>
 
       <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-10">
-        <div className="flex gap-2 mb-8 border-b border-slate-200/60 dark:border-slate-700/60 pb-1">
+        <StepBar current={4} />
+
+        <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200 dark:border-gray-800 pb-1">
           {tabs.map((tab) => {
             const isActive = location.pathname === tab.path
             const Icon = tab.icon
             return (
-              <Link key={tab.path} to={tab.path} className={`relative px-6 py-3 rounded-t-xl font-bold flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-inset ${isActive ? tab.color : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}>
-                <Icon size={18} /> {tab.label}
-                {isActive && (
-                  <motion.div layoutId="activetab" className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 dark:bg-emerald-400 rounded-t-full" />
-                )}
+              <Link key={tab.path} to={tab.path} className={`px-5 py-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${isActive ? 'border-green-700 dark:border-green-500 text-green-700 dark:text-green-500' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
+                <Icon size={16} /> {tab.label}
               </Link>
             )
           })}
         </div>
 
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-3">
-              <ShieldCheck className="text-emerald-500 dark:text-emerald-400" size={32} /> Safer Alternatives
-            </h2>
-            <motion.button onClick={handleDownload} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="bg-emerald-600 dark:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 dark:hover:bg-emerald-600 flex items-center gap-2 shadow-lg shadow-emerald-200 dark:shadow-none transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-              <Download size={20}/> Download PDF
-            </motion.button>
-          </div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-green-700 dark:text-green-500 flex items-center gap-2">
+            <ShieldCheck size={24} /> Recommended Counter Draft
+          </h2>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">AI-suggested safer versions of risky clauses. For academic reference only.</p>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-lg border border-white/60 dark:border-slate-700/60 rounded-2xl p-6 shadow-xl shadow-slate-200/30 dark:shadow-none relative group">
-            <div className="text-slate-800 dark:text-slate-200 font-semibold text-lg leading-relaxed whitespace-pre-wrap">
-              {analysis.counterDraft || "No counter draft available for this contract."}
-            </div>
-            <button onClick={handleCopy} className="absolute top-4 right-4 p-2 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border border-slate-200 dark:border-slate-600 rounded-md text-slate-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              {copied ? <Check size={18} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={18} />}
-            </button>
-          </motion.div>
-          
-          <div className="mt-8 flex gap-3">
-            <button onClick={() => navigate(`/results/${id}`)} className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              Back to Results
-            </button>
+        <div className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 shadow-sm w-full">
+          <div className="text-gray-800 dark:text-gray-200 text-sm leading-relaxed whitespace-pre-wrap font-mono">
+            {analysis.counterDraft || "No counter draft available for this contract."}
           </div>
-        </motion.div>
+          <button onClick={handleCopy} className="absolute top-4 right-4 p-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-gray-500 dark:text-gray-400 hover:text-blue-700 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700/50 transition-colors shadow-sm">
+            {copied ? <Check size={16} className="text-green-600 dark:text-green-500" /> : <Copy size={16} />}
+          </button>
+        </div>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <button onClick={() => navigate(`/results/${id}`)} className="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-6 py-2 rounded-md font-semibold hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+            Back to Results
+          </button>
+          <button className="bg-green-700 dark:bg-green-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-green-800 dark:hover:bg-green-700 transition-colors flex items-center gap-2">
+            <Download size={18} /> Download PDF
+          </button>
+        </div>
       </main>
-
-      <AnimatePresence>
-        {showToast && (
-          <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="fixed bottom-6 right-6 bg-slate-800 dark:bg-white text-white dark:text-slate-900 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50">
-            <CheckCircle2 size={24} className="text-emerald-400 dark:text-emerald-500" />
-            <span className="font-bold text-sm">Counter-draft PDF Downloaded</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   )
 }
