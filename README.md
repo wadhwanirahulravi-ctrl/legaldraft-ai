@@ -42,21 +42,34 @@ https://legaldraft-ai-alpha.vercel.app/
 
 ## How to Run Locally
 ###Clone the Repository
+
 ''bash
 git clone https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai.git
+
 ###Backend
+
 cd backend
+
 npm install
+
 npm start
+
 ###Frontend
+
 cd frontend
+
 npm install
+
 npm run dev
 
 ##Team Members
+
 •	Rahul – Frontend development and UI 
+
 •	Rehyan – Backend routes and MongoDB integration 
+
 •	Gauri – AI service and prompt integration
+
 •	Shweta Ghogare – Contract and Analysis models, PDF upload and text extraction 
 
 
