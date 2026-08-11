@@ -10,13 +10,13 @@ https://legaldraft-ai-alpha.vercel.app/
 
 ## Screenshots
 ###Home Page
-![Home Page](https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai/blob/436cc27ee29b4318396f9f6c83e6df48c337b010/Screenshot%202026-08-10%20222438.png)
+![Home Page](doc/Screenshot-home.png)
 
 ###Contract Analysis
- ![Contract Analysis Page](https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai/blob/d719c8b424ce23fea51a2bbe6efe87b6a584c11d/doc/Screenshot%20-analysis.png)
-
+ ![Contract Analysis Page](doc/Screenshot-analysis.png)
+ 
 ### Results
- ![Result Page](https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai/blob/436cc27ee29b4318396f9f6c83e6df48c337b010/Screenshot%202026-08-10%20222713.png)
+ ![Result Page](doc/Screenshot-result.png)
  
 ## Tech Stack
 
