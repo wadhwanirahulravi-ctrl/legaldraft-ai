@@ -9,12 +9,14 @@ Legal contracts can be difficult for ordinary people to understand because they 
 https://legaldraft-ai-alpha.vercel.app/
 
 ## Screenshots
-Home Page
- 
-Contract Analysis
- 
+###Home Page
+![Home Page](https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai/blob/436cc27ee29b4318396f9f6c83e6df48c337b010/Screenshot%202026-08-10%20222438.png)
 
- Results
+###Contract Analysis
+ ![Contract Analysis Page](https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai/blob/436cc27ee29b4318396f9f6c83e6df48c337b010/Screenshot%202026-08-10%20223256.png)
+
+### Results
+ ![Result Page](https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai/blob/436cc27ee29b4318396f9f6c83e6df48c337b010/Screenshot%202026-08-10%20222713.png)
  
 ## Tech Stack
 
@@ -39,21 +41,19 @@ Contract Analysis
 - Friendly interface for ordinary users
 
 ## How to Run Locally
-
-Clone the Repository
-
-bash
+###Clone the Repository
+''bash
 git clone https://github.com/wadhwanirahulravi-ctrl/legaldraft-ai.git
-Backend
+###Backend
 cd backend
 npm install
 npm start
-Frontend
+###Frontend
 cd frontend
 npm install
 npm run dev
 
-Team Members
+##Team Members
 •	Rahul – Frontend development and UI 
 •	Rehyan – Backend routes and MongoDB integration 
 •	Gauri – AI service and prompt integration
