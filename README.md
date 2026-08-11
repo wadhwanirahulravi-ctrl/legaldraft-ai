@@ -13,10 +13,10 @@ https://legaldraft-ai-alpha.vercel.app/
 ![Home Page](doc/Screenshot-home.png)
 
 ###Contract Analysis
- ![Contract Analysis Page](doc/Screenshot-analysis.png)
+ ![Contract Analysis Page](doc/Screenshot -analysis.png)
  
 ### Results
- ![Result Page](doc/Screenshot-result.png)
+ ![Result Page](doc/Screenshot -result.png)
  
 ## Tech Stack
 
