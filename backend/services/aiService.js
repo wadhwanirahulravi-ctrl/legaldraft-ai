@@ -25,20 +25,20 @@ The JSON must have exactly these fields:
 
   "clauses": [
     {
-      "text": "exact clause text from the contract",
-      "category": "Payment / Termination / Liability /
+      "originalText": "exact clause text from the contract",
+      "clauseName": "Payment / Termination / Liability /
       Confidentiality / Intellectual Property /
       Dispute Resolution / or other suitable category",
       "riskLevel": "low",
-      "explanation": "what this means in plain English,
+      "reasoning": "what this means in plain English,
       no legal jargon"
     }
   ],
 
   "redFlags": [
     {
-      "clauseText": "exact risky clause text",
-      "reason": "why this is dangerous in plain language",
+      "originalText": "exact risky clause text",
+      "reasoning": "why this is dangerous in plain language",
       "severity": "warning"
     }
   ],
@@ -57,7 +57,6 @@ Rules:
 - Never use legal jargon in explanations`
 
 async function analyseContract(contractText) {
-  // Truncate to avoid token limit (GPT-4o-mini handles ~16k)
   const text = contractText.substring(0, 12000)
 
   const response = await client.chat.completions.create({
