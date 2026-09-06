@@ -4,87 +4,63 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-const SYSTEM_PROMPT = `You are a legal contract analyst
-helping ordinary people in India understand contracts
-written in legal English. Your users are tenants,
-employees, small business owners and freelancers.
-They are not lawyers and may have zero legal knowledge.
+const SYSTEM_PROMPT = `Analyse the contract and return ONLY a valid JSON object. Do not use markdown blocks.
 
-Analyse the provided contract and return ONLY a valid
-JSON object. Do not write any text, explanation, or
-markdown outside the JSON. Do not wrap the response in
-json code fences.
-
-The JSON must have exactly these fields:
-
+The JSON must strictly follow this exact structure and use these exact keys:
 {
-  "summary": "2-3 sentence plain English overview of the
-  contract. The final sentence must always be: This
-  analysis is for informational purposes only. Always
-  consult a qualified legal professional.",
-
+  "summary": "2-3 sentence plain English overview.",
   "clauses": [
     {
-      "originalText": "exact clause text from the contract",
-      "clauseName": "Payment / Termination / Liability /
-      Confidentiality / Intellectual Property /
-      Dispute Resolution / or other suitable category",
+      "clauseName": "category name",
       "riskLevel": "low",
-      "reasoning": "what this means in plain English,
-      no legal jargon"
+      "originalText": "exact clause text",
+      "reasoning": "plain English explanation"
     }
   ],
-
   "redFlags": [
     {
+      "clauseName": "category name",
+      "riskLevel": "high",
       "originalText": "exact risky clause text",
-      "reasoning": "why this is dangerous in plain language",
-      "severity": "warning"
+      "reasoning": "why this is dangerous"
     }
   ],
-
-  "counterDraft": "For each high-risk clause write:
-  ORIGINAL: [exact clause text]
-  SAFER: [rewritten version that better protects the user]"
+  "counterDraft": "Provide plain text only. Do not use JSON formatting or braces. Format as: 'Original: [text] | Safer: [text]'"
 }
 
 Rules:
-- riskLevel must be exactly one of: low, medium, high
-- severity must be exactly one of: warning, critical
-- If a section has no items return an empty array []
-- Never omit any field from the JSON object
-- Explain everything in simple everyday English
-- Never use legal jargon in explanations`
+- You must strictly use the exact camelCase keys shown above.
+- riskLevel must be strictly one of: low, medium, high.
+- counterDraft must be a string, not an object or array.`
 
 async function analyseContract(contractText) {
   const text = contractText.substring(0, 12000)
 
   const response = await client.chat.completions.create({
-    model:       'gpt-4o-mini',
-    max_tokens:  2000,
-    temperature: 0.3,
+    model: 'gpt-4o-mini',
+    max_tokens: 2000,
+    temperature: 0.1,
+    response_format: { type: 'json_object' },
     messages: [
       {
-        role:    'system',
+        role: 'system',
         content: SYSTEM_PROMPT
       },
       {
-        role:    'user',
+        role: 'user',
         content: 'Analyse this contract:\n\n' + text
       }
     ]
   })
 
-  const raw   = response.choices[0].message.content
+  const raw = response.choices[0].message.content
   const clean = raw.replace(/```json|```/g, '').trim()
 
   let result
   try {
     result = JSON.parse(clean)
   } catch (parseErr) {
-    throw new Error(
-      'AI returned invalid JSON. Please try again.'
-    )
+    throw new Error('AI returned invalid JSON.')
   }
 
   return result

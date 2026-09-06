@@ -68,15 +68,15 @@ function AnalysisResults() {
               <div className="flex justify-between items-start mb-2">
                 <span className="font-semibold text-gray-900 dark:text-white text-sm">{clause.clauseName}</span>
                 <span className={`text-xs font-bold px-2 py-1 rounded border ${
-                  clause.riskLevel === 'High' ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50' :
-                  clause.riskLevel === 'Medium' ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/50' :
+                  clause.riskLevel?.toLowerCase() === 'high' ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/50' :
+                  clause.riskLevel?.toLowerCase() === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800/50' :
                   'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800/50'
                 }`}>
                   {clause.riskLevel} Risk
                 </span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-3"><strong>Original:</strong> {clause.originalText}</p>
-              <p className="text-blue-800 dark:text-blue-300 text-sm bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-100 dark:border-blue-800/50"><strong>Simple Explanation:</strong> {clause.explanation}</p>
+              <p className="text-blue-800 dark:text-blue-300 text-sm bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-100 dark:border-blue-800/50"><strong>Simple Explanation:</strong> {clause.reasoning}</p>
             </div>
           ))}
         </div>
